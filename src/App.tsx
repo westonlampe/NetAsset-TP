@@ -373,9 +373,20 @@ function App() {
   };
 
   const handleEditAsset = (updatedAsset: Asset) => {
-    setAssets(assets.map(asset => 
-      asset.id === updatedAsset.id ? updatedAsset : asset
-    ));
+    // Create a new array with the updated asset
+    const updatedAssets = assets.map(asset => 
+      asset.id === updatedAsset.id ? {
+        ...updatedAsset,
+        // Recalculate netBookValue based on cost and accumulated depreciation
+        netBookValue: updatedAsset.cost - updatedAsset.accumulatedDepreciation,
+        // Ensure dates are proper Date objects
+        acquisitionDate: new Date(updatedAsset.acquisitionDate),
+        inServiceDate: new Date(updatedAsset.inServiceDate),
+        lastDepreciationDate: updatedAsset.lastDepreciationDate ? new Date(updatedAsset.lastDepreciationDate) : undefined
+      } : asset
+    );
+    
+    setAssets(updatedAssets);
     setEditingAsset(null);
     setShowAssetForm(false);
     setSelectedAsset(null);
@@ -403,8 +414,11 @@ function App() {
         ? {
             ...asset,
             status: 'disposed',
-            disposalInfo,
-            lastDepreciationDate: disposalInfo.date
+            disposalInfo: {
+              ...disposalInfo,
+              date: new Date(disposalInfo.date)
+            },
+            lastDepreciationDate: new Date(disposalInfo.date)
           }
         : asset
     ));
